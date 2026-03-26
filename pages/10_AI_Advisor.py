@@ -6,37 +6,27 @@ from utils.fetch_news import load_news_data
 
 st.title("🤖 AI Financial Advisor")
 
-ticker = st.text_input("Enter Stock Ticker", "AAPL")
+ticker = st.text_input("Enter Ticker", "AAPL")
 
-if st.button("Get Recommendation"):
+if st.button("Get Advice"):
 
-    # -------- STOCK PREDICTION --------
     df = get_stock_data(ticker)
+    df.columns = [col[0] if isinstance(col, tuple) else col for col in df.columns]
 
-    model_pred = train_model(df)
+    latest = float(df["Close"].iloc[-1])
 
-    close_col = [col for col in df.columns if "Close" in col][0]
-    latest_close = float(df.iloc[-1][close_col])
+    model = train_model(df)
+    pred = model.predict([[latest]])
 
-    pred = model_pred.predict([[latest_close]])
-
-    # -------- NEWS SENTIMENT --------
-    news_df = load_news_data()
-
+    news = load_news_data()
     model_sent = load_model()
 
-    sample_text = news_df["Title"].iloc[0]
-
-    result = analyze_sentiment(sample_text, model_sent)
-
+    result = analyze_sentiment(news["Title"].iloc[0], model_sent)
     sentiment = result[0]['label']
 
-    # -------- FINAL DECISION --------
-    st.subheader("🧠 AI Decision")
-
     if pred[0] == 1 and sentiment == "positive":
-        st.success("📈 BUY — Strong positive signals")
+        st.success("📈 BUY")
     elif pred[0] == 0 and sentiment == "negative":
-        st.error("📉 SELL — Strong negative signals")
+        st.error("📉 SELL")
     else:
-        st.warning("⚖️ HOLD — Mixed signals")
+        st.warning("⚖️ HOLD")

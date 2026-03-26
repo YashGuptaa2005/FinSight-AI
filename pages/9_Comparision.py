@@ -3,30 +3,25 @@ from utils.fetch_stock import get_stock_data
 
 st.title("⚖️ Company Comparison")
 
-tickers = st.text_input("Enter Tickers (comma separated)", "AAPL,TSLA")
+tickers = st.text_input("Enter Tickers", "AAPL,TSLA")
 
 if st.button("Compare"):
 
     ticker_list = [t.strip().upper() for t in tickers.split(",")]
 
-    st.subheader("📈 Stock Comparison")
+    combined = None
 
-    combined_df = None
+    for t in ticker_list:
+        df = get_stock_data(t)
 
-    for ticker in ticker_list:
-        df = get_stock_data(ticker)
-
-        # Fix multi-level columns
         df.columns = [col[0] if isinstance(col, tuple) else col for col in df.columns]
 
         df = df[["Date", "Close"]]
-        df = df.rename(columns={"Close": ticker})
+        df = df.rename(columns={"Close": t})
 
-        if combined_df is None:
-            combined_df = df
+        if combined is None:
+            combined = df
         else:
-            combined_df = combined_df.merge(df, on="Date")
+            combined = combined.merge(df, on="Date")
 
-    combined_df = combined_df.set_index("Date")
-
-    st.line_chart(combined_df)
+    st.line_chart(combined.set_index("Date"))

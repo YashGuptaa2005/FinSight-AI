@@ -6,19 +6,19 @@ st.title("🚨 Stock Anomaly Detection")
 
 ticker = st.text_input("Enter Stock Ticker", "AAPL")
 
-if st.button("Detect Anomalies"):
-    df = get_stock_data(ticker)
+if st.button("Detect"):
 
+    df = get_stock_data(ticker)
     df = detect_anomalies(df)
 
-    st.subheader("📊 Data with Anomalies")
+    st.subheader("📊 Data")
     st.dataframe(df.tail())
 
     anomalies = df[df["anomaly"] == -1]
 
-    st.subheader("🚨 Detected Anomalies")
+    st.subheader("🚨 Anomalies")
 
     if not anomalies.empty:
         st.dataframe(anomalies)
     else:
-        st.success("No anomalies detected 🎉")
+        st.success("No anomalies detected")

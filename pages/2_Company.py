@@ -1,18 +1,33 @@
 import streamlit as st
-import pandas as pd
 from utils.fetch_stock import get_stock_data
 
-st.title("🏢 Company Analysis")
+st.title("🏢 Company Overview")
 
-# Input
-ticker = st.text_input("Enter Stock Ticker", "AAPL")
+ticker = st.text_input("Enter Company Ticker", "AAPL")
 
-# Button
-if st.button("Fetch Data"):
+if st.button("Analyze"):
+
     df = get_stock_data(ticker)
 
-    st.subheader(f"{ticker} Stock Data")
+    # Fix columns
+    df.columns = [col[0] if isinstance(col, tuple) else col for col in df.columns]
 
-    st.write(df.tail())
+    close = df["Close"]
 
-    st.line_chart(df.set_index("Date")["Close"])
+    # -------- METRICS --------
+    col1, col2, col3 = st.columns(3)
+
+    col1.metric("📊 Current Price", f"{close.iloc[-1]:.2f}")
+    col2.metric("🔼 High", f"{close.max():.2f}")
+    col3.metric("🔽 Low", f"{close.min():.2f}")
+
+    st.markdown("---")
+
+    # -------- TABS --------
+    tab1, tab2 = st.tabs(["📈 Stock Chart", "📊 Raw Data"])
+
+    with tab1:
+        st.line_chart(df.set_index("Date")["Close"])
+
+    with tab2:
+        st.dataframe(df.tail())
